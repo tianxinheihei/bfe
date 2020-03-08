@@ -38,6 +38,7 @@ import (
 	"github.com/baidu/bfe/bfe_config/bfe_tls_conf/tls_rule_conf"
 	"github.com/baidu/bfe/bfe_http"
 	"github.com/baidu/bfe/bfe_http2"
+	"github.com/baidu/bfe/bfe_http2/bfe_h2c"
 	"github.com/baidu/bfe/bfe_module"
 	"github.com/baidu/bfe/bfe_route"
 	"github.com/baidu/bfe/bfe_spdy"
@@ -173,9 +174,10 @@ func (srv *BfeServer) InitConfig() {
 
 func (srv *BfeServer) InitHttp() (err error) {
 	// initialize http next proto handlers
-	httpNextProto := make(map[string]func(*bfe_http.Server, bfe_http.ResponseWriter, *bfe_http.Request))
+	httpNextProto := make(map[string]func(*bfe_http.Server, bfe_http.ResponseWriter, *bfe_http.Request, bfe_http.Handler))
 	httpNextProto[bfe_websocket.WebSocket] = bfe_websocket.NewProtoHandler(&bfe_websocket.Server{
 		BalanceHandler: srv.Balance})
+	httpNextProto[bfe_h2c.H2C] = bfe_h2c.NewProtoHandler(nil)
 	srv.HTTPNextProto = httpNextProto
 
 	return nil

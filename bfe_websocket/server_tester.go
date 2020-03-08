@@ -45,7 +45,7 @@ type ServerTester struct {
 
 	// for websocket proxy
 	mp *bfe_util.MockServer
-	hl func(*bfe_http.Server, bfe_http.ResponseWriter, *bfe_http.Request)
+	hl func(*bfe_http.Server, bfe_http.ResponseWriter, *bfe_http.Request, bfe_http.Handler)
 
 	// for websocket server
 	mb *httptest.Server
@@ -108,7 +108,7 @@ func (st *ServerTester) handleWebsocketConn(conn net.Conn) {
 
 	// check and process websocket upgrade
 	if CheckUpgradeWebSocket(req) {
-		st.hl(st.mp.Config, rw, req)
+		st.hl(st.mp.Config, rw, req, nil)
 		return
 	}
 }

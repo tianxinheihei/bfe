@@ -75,7 +75,7 @@ type Server struct {
 	// ownership of the http connection when an HTTP Upgrade has
 	// occurred. The map key is the protocol name negotiated (eg
 	// websocket, h2c)
-	HTTPNextProto map[string]func(*Server, ResponseWriter, *Request)
+	HTTPNextProto map[string]func(*Server, ResponseWriter, *Request, Handler)
 
 	// ConnState specifies an optional callback function that is
 	// called when a client connection changes state. See the

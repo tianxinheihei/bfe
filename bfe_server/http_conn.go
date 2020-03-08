@@ -38,6 +38,7 @@ import (
 	"github.com/baidu/bfe/bfe_basic"
 	"github.com/baidu/bfe/bfe_bufio"
 	"github.com/baidu/bfe/bfe_http"
+	"github.com/baidu/bfe/bfe_http2/bfe_h2c"
 	"github.com/baidu/bfe/bfe_module"
 	"github.com/baidu/bfe/bfe_tls"
 	"github.com/baidu/bfe/bfe_util"
@@ -484,7 +485,17 @@ func (c *conn) serve() {
 				proxyState.ClientConnActiveInc(c.session.Proto, 1)
 				// switching to websocket protocol
 				log.Logger.Debug("conn.serve(): upgrade to websocket protocol over http/https")
-				fn(&c.server.Server, w, req)
+				fn(&c.server.Server, w, req, nil)
+				return
+			case bfe_h2c.H2C:
+				proxyState.ClientConnActiveDec(c.session.Proto, 1)
+				c.session.Proto = bfe_h2c.H2C
+				proxyState.ClientConnServedInc(c.session.Proto, 1)
+				proxyState.ClientConnActiveInc(c.session.Proto, 1)
+				log.Logger.Debug("conn.serve(): upgrade to h2c")
+
+				handler := NewProtocolHandler(c, bfe_h2c.H2C)
+				fn(&c.server.Server, w, req, handler)
 				return
 			default:
 				log.Logger.Debug("conn.serve(): not upgrade to other protocol over http/https")
@@ -592,6 +603,10 @@ func validNPN(proto string) bool {
 func checkHttpUpgrade(req *bfe_basic.Request) string {
 	if bfe_websocket.CheckUpgradeWebSocket(req.HttpRequest) {
 		return bfe_websocket.WebSocket
+	}
+
+	if bfe_h2c.CheckUpgradeH2(req.HttpRequest) {
+		return bfe_h2c.H2C
 	}
 	return ""
 }

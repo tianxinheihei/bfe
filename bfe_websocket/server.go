@@ -74,12 +74,12 @@ func (s *Server) handleConn(hs *http.Server, rw http.ResponseWriter, req *http.R
 }
 
 // NewProtoHandler returns protocol handler for websocket.
-func NewProtoHandler(conf *Server) func(*http.Server, http.ResponseWriter, *http.Request) {
+func NewProtoHandler(conf *Server) func(*http.Server, http.ResponseWriter, *http.Request, http.Handler) {
 	if conf == nil {
 		conf = new(Server)
 	}
 
-	protoHandler := func(hs *http.Server, w http.ResponseWriter, r *http.Request) {
+	protoHandler := func(hs *http.Server, w http.ResponseWriter, r *http.Request, h http.Handler) {
 		if sc := conf.handleConn(hs, w, r); sc != nil {
 			sc.serve()
 		}
